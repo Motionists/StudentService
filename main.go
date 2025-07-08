@@ -2,12 +2,15 @@ package main
 
 import (
 	"database/sql" // 导入 Go 的标准库，用于操作数据库
-	"log"          // 导入日志库，用于记录日志信息
-	"net/http"     // 导入 HTTP 库，用于处理 HTTP 请求和响应
-	"strconv"      // 导入字符串转换库，用于处理字符串和数字之间的转换
+	"fmt"
+	"log"      // 导入日志库，用于记录日志信息
+	"net/http" // 导入 HTTP 库，用于处理 HTTP 请求和响应
+	"strconv"  // 导入字符串转换库，用于处理字符串和数字之间的转换
+	"time"     // 用于设置 Token 的过期时间
 
 	"github.com/gin-gonic/gin"         // 导入 Gin 框架，用于构建 Web 服务
 	_ "github.com/go-sql-driver/mysql" // 导入 MySQL 驱动，支持与 MySQL 数据库交互
+	"github.com/golang-jwt/jwt"        // 导入 JWT 库
 )
 
 // Student 结构体定义学生信息，用于表示数据库中的学生记录
@@ -82,7 +85,7 @@ func ListStudents(c *gin.Context) {
 
 	// 返回 HTTP 200 响应和学生信息
 	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
+		"code":    http.StatusOK,
 		"message": "success",
 		"data":    students,
 	})
@@ -301,6 +304,34 @@ func DeleteStudent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "学生删除成功",
+	})
+}
+
+// 定义一个密钥，用于签名和验证 JWT Token
+var jwtSecret = []byte("your_secret_key")
+
+// 生成 JWT Token 的函数
+func generateToken(userID int) (string, error) {
+	// 定义 Token 的声明部分
+	claims := jwt.MapClaims{
+		"userID": userID,                                // 用户 ID
+		"exp":    time.Now().Add(time.Hour * 24).Unix(), // Token 过期时间（24小时）
+	}
+
+	// 使用密钥生成 Token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+
+// 验证 JWT Token 的函数
+func validateToken(tokenString string) (*jwt.Token, error) {
+	// 解析 Token，并验证签名
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// 确保使用的是正确的签名方法
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return jwtSecret, nil
 	})
 }
 
