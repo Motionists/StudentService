@@ -11,7 +11,7 @@ var DB *sql.DB
 
 func initDB() {
 	var err error
-	dsn := "root:02020202@tcp(192.168.178.1:3306)/StudentService?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "yoursqlname:yousqlpassword@tcp(yoursqladdress:3306)/StudentService?charset=utf8mb4&parseTime=True&loc=Local"
 	DB, err = sql.Open("mysql", dsn)
 
 	if err != nil {
