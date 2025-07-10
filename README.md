@@ -269,9 +269,3 @@ CREATE TABLE students (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
-
----
-
-© 2025 学生管理系统 API 文档
-
-找到具有 1 个许可证类型的类似代码
